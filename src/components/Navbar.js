@@ -1,14 +1,17 @@
 import React from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useBookmarks } from '../context/BookmarkContext';
 import logo from '../logo.svg';
+import './Navbar.css';
 
 const Navbar = () => {
     const { isDarkMode, toggleTheme } = useTheme();
     const { bookmarks } = useBookmarks();
+    const history = useHistory();
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCountry, setSelectedCountry] = React.useState('in');
+    const [isScrolled, setIsScrolled] = React.useState(false);
 
     const countries = [
         { code: 'in', name: 'India' },
@@ -24,36 +27,53 @@ const Navbar = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            window.location.href = `/search?q=${encodeURIComponent(searchQuery)}&country=${selectedCountry}`;
+            history.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&country=${selectedCountry}`);
         }
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            e.preventDefault();
+            history.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&country=${selectedCountry}`);
+        }
+    };
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <div>
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav className={`navbar navbar-expand-lg navbar-modern ${isScrolled ? 'scrolled' : ''}`}>
                 <div className="container-fluid">
-                    <Link className="navbar-brand d-flex align-items-center" to="/">
-                        <img src={logo} alt="NewsPulse Logo" className="me-2" style={{ width: '32px', height: '32px' }} />
+                <Link className="navbar-brand-modern" to="/">
+                    <img src={logo} alt="NewsPulse Logo" className="navbar-logo" />
                         <span className="brand-text">NewsPulse</span>
                     </Link>
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
+
+                <button className="navbar-toggler navbar-toggler-modern" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon navbar-toggler-icon-modern"></span>
                     </button>
+
                     <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li className="nav-item"><Link className="nav-link" aria-current="page" to="/">Home</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/business">Business</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/entertainment">Entertainment</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/general">General</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/health">Health</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/science">Science</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/sports">Sports</Link></li>
-                            <li className="nav-item"><Link className="nav-link" to="/technology">Technology</Link></li>
+                    <ul className="navbar-nav navbar-nav-modern me-auto mb-2 mb-lg-0">
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" aria-current="page" to="/">Home</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/business">Business</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/entertainment">Entertainment</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/general">General</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/health">Health</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/science">Science</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/sports">Sports</Link></li>
+                        <li className="nav-item"><Link className="nav-link nav-link-modern" to="/technology">Technology</Link></li>
                             <li className="nav-item">
-                                <Link className="nav-link position-relative" to="/bookmarks">
+                            <Link className="bookmark-badge" to="/bookmarks">
                                     <i className="fas fa-bookmark"></i>
                                     {bookmarks.length > 0 && (
-                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    <span className="bookmark-count">
                                             {bookmarks.length}
                                         </span>
                                     )}
@@ -61,37 +81,36 @@ const Navbar = () => {
                             </li>
                         </ul>
                         
-                        <div className="d-flex align-items-center me-3">
+                    <div className="navbar-search">
                             <select 
-                                className="form-select form-select-sm me-2" 
+                            className="country-selector" 
                                 value={selectedCountry}
-                                onChange={(e) => setSelectedCountry(e.target.value)}
-                                style={{ width: 'auto' }}
+                            onChange={(e) => setSelectedCountry(e.target.value)}
                             >
                                 {countries.map(country => (
                                     <option key={country.code} value={country.code}>
                                         {country.name}
                                     </option>
                                 ))}
-                            </select>
-                        </div>
+                        </select>
 
-                        <form className="d-flex me-3" onSubmit={handleSearch}>
+                        <form className="search-form" onSubmit={handleSearch}>
                             <input 
-                                className="form-control me-2" 
-                                type="search" 
-                                placeholder="Search news..." 
+                                className="search-input"
+                                type="search"
+                                placeholder="Search news..."
                                 aria-label="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={handleKeyPress}
                             />
-                            <button className="btn btn-outline-success" type="submit">
+                            <button className="search-btn" type="submit">
                                 <i className="fas fa-search"></i>
                             </button>
                         </form>
 
                         <button 
-                            className="btn btn-outline-light" 
+                            className="theme-toggle"
                             onClick={toggleTheme}
                             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                         >
@@ -99,8 +118,8 @@ const Navbar = () => {
                         </button>
                     </div>
                 </div>
-            </nav>
-        </div>
+                </div>
+        </nav>
     )
 }
 

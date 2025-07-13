@@ -29,14 +29,13 @@ export const testNewsAPI = async () => {
 
 // Alternative API keys for testing
 export const ALTERNATIVE_API_KEYS = [
-    '84ebf4a8b7ab41a699b1329c862aa1b9', // Original
-    'YOUR_API_KEY_HERE', // Replace with your own
+    '4e8e5c0307c5a5eb42a018a73565a0b6',
 ];
 
 // Get a working API key
 export const getWorkingAPIKey = async () => {
     for (const key of ALTERNATIVE_API_KEYS) {
-        if (key === 'YOUR_API_KEY_HERE') continue;
+        if (key === '4e8e5c0307c5a5eb42a018a73565a0b6') continue;
         
         const testUrl = `https://newsapi.org/v2/top-headlines?country=us&category=general&apiKey=${key}&page=1&pageSize=1`;
         

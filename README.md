@@ -69,7 +69,7 @@ A modern, feature-rich news application built with React that provides real-time
 - **Context API** - State management for theme and bookmarks
 - **Bootstrap 5** - Responsive CSS framework
 - **Font Awesome** - Icon library
-- **NewsAPI** - News data source
+- **BBC News RSS Feeds** (100% Free, No API Key Required)
 - **LocalStorage** - Data persistence
 - **CSS3** - Custom styling with CSS variables
 
@@ -101,44 +101,9 @@ npm start
 
 ## 🌐 Deployment to Netlify
 
-### Method 1: Deploy from Git (Recommended)
-
-1. **Push your code to GitHub**
-```bash
-git add .
-git commit -m "Initial commit with NewsPulse features"
-git push origin main
-```
-
-2. **Connect to Netlify**
-   - Go to [netlify.com](https://netlify.com) and sign up/login
-   - Click "New site from Git"
-   - Choose your GitHub repository
-   - Set build settings:
-     - Build command: `npm run build`
-     - Publish directory: `build`
-   - Click "Deploy site"
-
-### Method 2: Manual Deploy
-
-1. **Build the project**
-```bash
-npm run build
-```
-
-2. **Deploy to Netlify**
-   - Go to [netlify.com](https://netlify.com)
-   - Drag and drop the `build` folder to deploy
-   - Or use Netlify CLI:
-```bash
-npm install -g netlify-cli
-netlify deploy --prod --dir=build
-```
-
-### Environment Variables (Optional)
-If you want to use your own NewsAPI key, add it to Netlify:
-1. Go to Site Settings > Environment Variables
-2. Add `REACT_APP_NEWS_API_KEY` with your API key
+- **No API keys or environment variables needed!**
+- Simply connect your GitHub repository to Netlify
+- The app uses free BBC News RSS feeds
 
 ## 📁 Project Structure
 
@@ -154,10 +119,18 @@ src/
 ├── context/
 │   ├── ThemeContext.js    # Dark/light mode state management
 │   └── BookmarkContext.js # Bookmark state management
+├── config/
+│   └── api.js           # RSS feed config (no API key needed)
 ├── App.js                 # Main app component with routing
 ├── logo.svg               # Custom NewsPulse logo
 └── index.css              # Global styles and CSS variables
 ```
+
+## 🆓 About RSS Feeds
+- **100% Free** - No registration, no API key, no login required
+- **BBC News** - Reliable, up-to-date news from BBC
+- **Multiple Categories** - General, Business, Technology, Sports, Entertainment
+- **No Rate Limits** - Unlimited requests
 
 ## 🎯 Key Features for Resume
 
@@ -228,7 +201,8 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- [NewsAPI](https://newsapi.org/) for providing news data
+- [BBC News](https://www.bbc.com/news) for RSS feeds
+- [RSS2JSON](https://rss2json.com/) for RSS to JSON conversion
 - [Bootstrap](https://getbootstrap.com/) for the CSS framework
 - [Font Awesome](https://fontawesome.com/) for icons
 - [React](https://reactjs.org/) team for the amazing framework

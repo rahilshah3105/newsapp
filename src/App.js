@@ -21,10 +21,10 @@ export default class App extends Component {
     return (
       <ThemeProvider>
         <BookmarkProvider>
-          <Router>
+        <Router>
             <div className="App">
-              <Navbar />
-              <Switch>
+          <Navbar />
+          <Switch>
                 <Route exact path="/">
                   <News key="general" pageSize={this.pageSize} country="in" category="general" />
                 </Route>
@@ -58,9 +58,9 @@ export default class App extends Component {
                 <Route exact path="/api-test">
                   <ApiTest />
                 </Route>
-              </Switch>
+          </Switch>
             </div>
-          </Router>
+        </Router>
         </BookmarkProvider>
       </ThemeProvider>
     )
