@@ -1,0 +1,29 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="19" fill="url(#gradient)" stroke="#007bff" stroke-width="2"/>
+  
+  <!-- Globe grid lines -->
+  <path d="M20 1 C20 1, 30 5, 30 20 C30 35, 20 39, 20 39" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <path d="M20 1 C20 1, 10 5, 10 20 C10 35, 20 39, 20 39" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <ellipse cx="20" cy="20" rx="15" ry="3" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <ellipse cx="20" cy="20" rx="15" ry="8" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.4"/>
+  
+  <!-- Newspaper icon -->
+  <rect x="12" y="15" width="16" height="10" rx="1" fill="#ffffff" opacity="0.9"/>
+  <rect x="14" y="17" width="12" height="1" fill="#007bff"/>
+  <rect x="14" y="19" width="8" height="1" fill="#007bff"/>
+  <rect x="14" y="21" width="10" height="1" fill="#007bff"/>
+  <rect x="14" y="23" width="6" height="1" fill="#007bff"/>
+  
+  <!-- News lines -->
+  <line x1="14" y1="25" x2="22" y2="25" stroke="#007bff" stroke-width="1"/>
+  <line x1="14" y1="27" x2="20" y2="27" stroke="#007bff" stroke-width="1"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#007bff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0056b3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg> 
