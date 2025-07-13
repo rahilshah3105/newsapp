@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import NewsItem from './NewsItem';
-import Spinner from './Spinner';
 import { buildRssUrl, fetchRssDirectly, RSS_CONFIG } from '../config/api';
 import './News.css';
 
@@ -17,7 +16,7 @@ const SearchResults = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
 
-    const searchNews = async (query, pageNum = 1, append = false) => {
+    const searchNews = useCallback(async (query, pageNum = 1, append = false) => {
         if (!query || !query.trim()) return;
         
         setLoading(true);
@@ -73,7 +72,7 @@ const SearchResults = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (searchQuery && searchQuery.trim()) {
@@ -82,24 +81,24 @@ const SearchResults = () => {
         }
     }, [searchQuery, country]);
 
-    const loadMore = () => {
+    const loadMore = useCallback(() => {
         if (!loading && hasMore && searchQuery) {
             const nextPage = page + 1;
             setPage(nextPage);
             searchNews(searchQuery, nextPage, true);
         }
-    };
+    }, [loading, hasMore, searchQuery, page, searchNews]);
 
-    const handleScroll = () => {
+    const handleScroll = useCallback(() => {
         if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
             loadMore();
         }
-    };
+    }, [loadMore]);
 
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [page, loading, hasMore, searchQuery]);
+    }, [handleScroll]);
 
     if (!searchQuery || !searchQuery.trim()) {
         return (
