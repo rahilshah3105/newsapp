@@ -3,6 +3,11 @@
   "name": "NewsPulse - Your Daily News Companion",
   "icons": [
     {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
@@ -20,7 +25,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#007bff",
-  "background_color": "#ffffff",
+  "theme_color": "#3498db",
+  "background_color": "#f5f7fa",
   "description": "Get real-time news from around the world with advanced search, bookmarks, and dark mode support."
 }
