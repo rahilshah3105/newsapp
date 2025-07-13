@@ -79,7 +79,7 @@ const SearchResults = () => {
             setPage(1);
             searchNews(searchQuery, 1, false);
         }
-    }, [searchQuery, country]);
+    }, [searchQuery, country, searchNews]);
 
     const loadMore = useCallback(() => {
         if (!loading && hasMore && searchQuery) {
