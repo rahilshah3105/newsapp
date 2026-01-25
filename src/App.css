@@ -95,6 +95,48 @@ body.dark-mode {
     }
   }
   
+  /* Search Box with Clear Button */
+  .search-box-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-with-clear {
+    padding-right: 40px !important;
+  }
+
+  .clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: #7f8c8d;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .clear-search-btn:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    transform: scale(1.1);
+  }
+
+  .dark-mode .clear-search-btn {
+    color: #bdc3c7;
+  }
+
+  .dark-mode .clear-search-btn:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+  }
+
   /* Utility Classes */
   .fade-in {
     animation: fadeInUp 0.6s ease-out;
@@ -392,14 +434,12 @@ body.dark-mode {
 }
 
 /* Text Selection */
-::selection {
+/* ::selection {
   background: linear-gradient(45deg, #3498db, #2980b9);
-  color: white;
-}
+} */
 
 ::-moz-selection {
   background: linear-gradient(45deg, #3498db, #2980b9);
-  color: white;
 }
 
 /* Focus Styles */

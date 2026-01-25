@@ -6,13 +6,19 @@ const Bookmarks = () => {
     const { bookmarks, clearAllBookmarks } = useBookmarks();
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('newest');
+    const searchInputRef = React.useRef(null);
 
     const filteredBookmarks = bookmarks
-        .filter(bookmark => 
-            bookmark.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            bookmark.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            bookmark.source?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        .filter(bookmark => {
+            const searchLower = searchTerm.toLowerCase();
+            const sourceText = typeof bookmark.source === 'string' 
+                ? bookmark.source 
+                : bookmark.source?.name || '';
+            
+            return bookmark.title?.toLowerCase().includes(searchLower) ||
+                bookmark.description?.toLowerCase().includes(searchLower) ||
+                sourceText.toLowerCase().includes(searchLower);
+        })
         .sort((a, b) => {
             switch (sortBy) {
                 case 'newest':
@@ -31,6 +37,13 @@ const Bookmarks = () => {
     const handleClearAll = () => {
         if (window.confirm('Are you sure you want to clear all bookmarks?')) {
             clearAllBookmarks();
+        }
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
         }
     };
 
@@ -62,15 +75,27 @@ const Bookmarks = () => {
                 </button>
             </div>
 
-            <div className="row mb-4">
+            <div className="row mb-4 gap-3">
                 <div className="col-md-6">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search bookmarks..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <div className="search-box-wrapper">
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            className="form-control search-with-clear"
+                            placeholder="Search bookmarks..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button 
+                                className="clear-search-btn" 
+                                onClick={handleClearSearch}
+                                title="Clear search"
+                            >
+                                <i className="fas fa-times"></i>
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div className="col-md-3">
                     <select

@@ -158,6 +158,15 @@
   min-width: 200px;
 }
 
+/* Hide browser's default clear button for search inputs */
+.search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-input::-webkit-search-decoration {
+  display: none;
+}
+
 .dark-mode .search-input {
   color: #f8f9fa;
 }
@@ -188,6 +197,35 @@
   transform: scale(1.1);
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.5);
   color: white;
+}
+
+.search-clear-btn {
+  background: transparent;
+  border: none;
+  color: #7f8c8d;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.search-clear-btn:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.dark-mode .search-clear-btn {
+  color: #bdc3c7;
+}
+
+.dark-mode .search-clear-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
 }
 
 /* Country Selector */

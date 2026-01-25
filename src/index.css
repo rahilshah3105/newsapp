@@ -42,6 +42,27 @@ body {
   color: var(--text-color);
 }
 
+/* Text Selection Colors */
+::selection {
+  background: rgba(52, 152, 219, 0.3);
+  color: #2c3e50;
+}
+
+::-moz-selection {
+  background: rgba(52, 152, 219, 0.3);
+  color: #2c3e50;
+}
+
+.dark-mode ::selection {
+  background: rgba(26, 188, 156, 0.3);
+  color: #ecf0f1;
+}
+
+.dark-mode ::-moz-selection {
+  background: rgba(26, 188, 156, 0.3);
+  color: #ecf0f1;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

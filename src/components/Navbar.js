@@ -12,6 +12,7 @@ const Navbar = () => {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedCountry, setSelectedCountry] = React.useState('in');
     const [isScrolled, setIsScrolled] = React.useState(false);
+    const searchInputRef = React.useRef(null);
 
     const countries = [
         { code: 'in', name: 'India' },
@@ -35,6 +36,13 @@ const Navbar = () => {
         if (e.key === 'Enter' && searchQuery.trim()) {
             e.preventDefault();
             history.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&country=${selectedCountry}`);
+        }
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
         }
     };
 
@@ -96,14 +104,25 @@ const Navbar = () => {
 
                         <form className="search-form" onSubmit={handleSearch}>
                             <input 
+                                ref={searchInputRef}
                                 className="search-input"
-                                type="search"
+                                type="text"
                                 placeholder="Search news..."
                                 aria-label="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleKeyPress}
                             />
+                            {searchQuery && (
+                                <button 
+                                    className="search-clear-btn" 
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    title="Clear search"
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            )}
                             <button className="search-btn" type="submit">
                                 <i className="fas fa-search"></i>
                             </button>

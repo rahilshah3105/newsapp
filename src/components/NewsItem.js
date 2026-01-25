@@ -7,6 +7,7 @@ const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source,
     const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
     const bookmarked = isBookmarked(newsUrl);
     const [imageError, setImageError] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     const calculateReadingTime = (text) => {
         const wordsPerMinute = 200;
@@ -27,19 +28,34 @@ const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source,
         }
     };
 
-    const handleShare = (e) => {
+    const handleShare = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (navigator.share) {
-            navigator.share({
-                title: title,
-                text: description,
-                url: newsUrl,
-            });
-        } else {
-            // Fallback: copy to clipboard
-            navigator.clipboard.writeText(`${title}\n\n${description}\n\nRead more: ${newsUrl}`);
-            alert('Link copied to clipboard!');
+        
+        // Prevent multiple simultaneous shares
+        if (isSharing) return;
+        
+        setIsSharing(true);
+        
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: title,
+                    text: description,
+                    url: newsUrl,
+                });
+            } else {
+                // Fallback: copy to clipboard
+                await navigator.clipboard.writeText(`${title}\n\n${description}\n\nRead more: ${newsUrl}`);
+                alert('Link copied to clipboard!');
+            }
+        } catch (error) {
+            // User cancelled the share or an error occurred
+            if (error.name !== 'AbortError') {
+                console.error('Error sharing:', error);
+            }
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -106,6 +122,7 @@ const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source,
                     <button 
                         className="news-card-btn news-card-btn-secondary"
                         onClick={handleShare}
+                        disabled={isSharing}
                         title="Share article"
                     >
                         <i className="fas fa-share-alt"></i>
