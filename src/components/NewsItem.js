@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useBookmarks } from '../context/BookmarkContext';
+import { useModal } from '../context/ModalContext';
 import { getFallbackImage, validateImageUrl, getOptimizedImageUrl } from '../utils/imageUtils';
 import './News.css';
 
 const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source, category = 'general', ...article }) => {
     const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+    const { openShare, openInfo } = useModal();
     const bookmarked = isBookmarked(newsUrl);
     const [imageError, setImageError] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
@@ -38,17 +40,18 @@ const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source,
         setIsSharing(true);
         
         try {
-            if (navigator.share) {
-                await navigator.share({
-                    title: title,
-                    text: description,
-                    url: newsUrl,
-                });
-            } else {
-                // Fallback: copy to clipboard
-                await navigator.clipboard.writeText(`${title}\n\n${description}\n\nRead more: ${newsUrl}`);
-                alert('Link copied to clipboard!');
-            }
+            openShare({
+                title: 'Share Article',
+                message: 'Use one of the options below to share this article.',
+                url: newsUrl,
+                onCopy: async () => {
+                    await navigator.clipboard.writeText(`${title}\n\n${description}\n\nRead more: ${newsUrl}`);
+                    openInfo({
+                        title: 'Copied',
+                        message: 'Article link copied to clipboard.'
+                    });
+                }
+            });
         } catch (error) {
             // User cancelled the share or an error occurred
             if (error.name !== 'AbortError') {

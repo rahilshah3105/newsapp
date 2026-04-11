@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useBookmarks } from '../context/BookmarkContext';
+import { useModal } from '../context/ModalContext';
 import NewsItem from './NewsItem';
 
 const Bookmarks = () => {
     const { bookmarks, clearAllBookmarks } = useBookmarks();
+    const { confirm } = useModal();
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('newest');
     const searchInputRef = React.useRef(null);
@@ -34,8 +36,15 @@ const Bookmarks = () => {
             }
         });
 
-    const handleClearAll = () => {
-        if (window.confirm('Are you sure you want to clear all bookmarks?')) {
+    const handleClearAll = async () => {
+        const shouldClear = await confirm({
+            title: 'Clear all bookmarks?',
+            message: 'This will remove all saved bookmarks from this device.',
+            confirmText: 'Clear All',
+            cancelText: 'Keep Bookmarks'
+        });
+
+        if (shouldClear) {
             clearAllBookmarks();
         }
     };

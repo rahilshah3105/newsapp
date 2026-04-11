@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import NewsItem from './NewsItem';
-import { buildRssUrl, fetchRssDirectly, RSS_CONFIG } from '../config/api';
+import { fetchMultiSourceNews, getCountryAwareCategoryFeeds } from '../config/api';
 import './News.css';
 
 const SearchResults = () => {
@@ -15,6 +15,7 @@ const SearchResults = () => {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const pageSize = 20;
 
     const searchNews = useCallback(async (query, pageNum = 1, append = false) => {
         if (!query || !query.trim()) return;
@@ -23,48 +24,28 @@ const SearchResults = () => {
         setError(null);
         
         try {
-            let parsedData;
+            const feeds = [
+                ...getCountryAwareCategoryFeeds('general', country),
+                ...getCountryAwareCategoryFeeds('business', country),
+                ...getCountryAwareCategoryFeeds('technology', country),
+                ...getCountryAwareCategoryFeeds('sports', country),
+                ...getCountryAwareCategoryFeeds('entertainment', country)
+            ];
 
-            // Try RSS2JSON first with API key
-            try {
-                const url = buildRssUrl(RSS_CONFIG.BBC_NEWS, {
-                    count: 100 // Get more articles to search through
-                });
-                const response = await fetch(url);
-                parsedData = await response.json();
-
-                if (parsedData.status === 'error') {
-                    throw new Error(parsedData.message || 'RSS2JSON failed');
-                }
-            } catch (rss2jsonError) {
-                console.log('RSS2JSON failed, trying direct RSS fetch...');
-                // Fallback to direct RSS parsing (no API key needed)
-                parsedData = await fetchRssDirectly(RSS_CONFIG.BBC_NEWS);
-            }
-
-            // Filter articles based on search query
-            const queryLower = query.toLowerCase().trim();
-            const filteredArticles = parsedData.items?.filter(item => {
-                const title = item.title?.toLowerCase() || '';
-                const description = item.description?.toLowerCase() || '';
-                return title.includes(queryLower) || description.includes(queryLower);
-            }).map(item => ({
-                title: item.title,
-                description: item.description,
-                url: item.url || item.link,
-                image: item.image || item.thumbnail || item.enclosure?.link,
-                publishedAt: item.publishedAt || item.pubDate,
-                source: { name: 'BBC News' },
-                author: 'BBC News'
-            })) || [];
+            const searchResult = await fetchMultiSourceNews({
+                feeds,
+                page: pageNum,
+                pageSize,
+                query
+            });
 
             if (append) {
-                setArticles(prev => [...prev, ...filteredArticles]);
+                setArticles(prev => [...prev, ...searchResult.items]);
             } else {
-                setArticles(filteredArticles);
+                setArticles(searchResult.items);
             }
             
-            setHasMore(filteredArticles.length === 100);
+            setHasMore(searchResult.hasMore);
         } catch (err) {
             console.error('Search RSS Error:', err);
             setError(err.message || 'Failed to search news. Please try again later.');
@@ -72,7 +53,7 @@ const SearchResults = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [country, pageSize]);
 
     useEffect(() => {
         if (searchQuery && searchQuery.trim()) {

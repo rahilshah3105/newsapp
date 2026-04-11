@@ -1,20 +1,22 @@
 import React, { Component } from 'react'
 import NewsItem from './NewsItem'
 import PropTypes from 'prop-types'
-import { buildRssUrl, fetchRssDirectly, RSS_CONFIG } from '../config/api';
+import { fetchMultiSourceNews, getAllCategoryFeeds, getCountryAwareCategoryFeeds } from '../config/api';
 import './News.css';
 
 export class News extends Component {
     static defaultProps = {
         country: 'in',
         pageSize: 12,
-        category: 'general'
+        category: 'general',
+        aggregateAllCategories: false
     }
 
     static propTypes = {
         country: PropTypes.string,
         pageSize: PropTypes.number,
-        category: PropTypes.string
+        category: PropTypes.string,
+        aggregateAllCategories: PropTypes.bool
     }
 
     captitalFirstLetter = (string) => {
@@ -34,60 +36,27 @@ export class News extends Component {
         document.title = `${this.captitalFirstLetter(this.props.category)} - NewsPulse`;
     }
 
-    getRssFeedForCategory(category) {
-        const categoryMap = {
-            'general': RSS_CONFIG.BBC_NEWS,
-            'business': RSS_CONFIG.BBC_BUSINESS,
-            'technology': RSS_CONFIG.BBC_TECH,
-            'sports': RSS_CONFIG.BBC_SPORT,
-            'entertainment': RSS_CONFIG.BBC_ENTERTAINMENT,
-            'health': RSS_CONFIG.BBC_NEWS,
-            'science': RSS_CONFIG.BBC_TECH
-        };
-        return categoryMap[category] || RSS_CONFIG.BBC_NEWS;
-    }
-
     async update() {
         try {
-            const rssFeed = this.getRssFeedForCategory(this.props.category);
+            const pageSize = this.props.pageSize;
+            const page = this.state.page;
+            const feeds = this.props.aggregateAllCategories
+                ? getAllCategoryFeeds(this.props.country)
+                : getCountryAwareCategoryFeeds(this.props.category, this.props.country);
             
             this.setState({ loading: true, error: null });
 
-            let parsedData;
-
-            // Try RSS2JSON first with API key
-            try {
-                const url = buildRssUrl(rssFeed, {
-                    count: this.props.pageSize
-                });
-                let data = await fetch(url);
-                parsedData = await data.json();
-
-                if (parsedData.status === 'error') {
-                    throw new Error(parsedData.message || 'RSS2JSON failed');
-                }
-            } catch (rss2jsonError) {
-                console.log('RSS2JSON failed, trying direct RSS fetch...');
-                // Fallback to direct RSS parsing (no API key needed)
-                parsedData = await fetchRssDirectly(rssFeed);
-            }
-
-            // Transform RSS data to match our expected format
-            const transformedArticles = parsedData.items?.map(item => ({
-                title: item.title,
-                description: item.description,
-                url: item.url || item.link,
-                image: item.image || item.thumbnail || item.enclosure?.link,
-                publishedAt: item.publishedAt || item.pubDate,
-                source: { name: 'BBC News' },
-                author: 'BBC News'
-            })) || [];
+            const newsResult = await fetchMultiSourceNews({
+                feeds,
+                page,
+                pageSize
+            });
 
             this.setState({
-                articles: this.state.page === 1 ? transformedArticles : [...this.state.articles, ...transformedArticles],
-                totalResults: parsedData.items?.length || 0,
+                articles: page === 1 ? newsResult.items : [...this.state.articles, ...newsResult.items],
+                totalResults: newsResult.totalResults,
                 loading: false,
-                hasMore: transformedArticles.length === this.props.pageSize
+                hasMore: newsResult.hasMore
             });
         } catch (error) {
             console.error('News fetch error:', error);

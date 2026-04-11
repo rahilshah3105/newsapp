@@ -8,6 +8,7 @@ import Bookmarks from './components/Bookmarks';
 import ApiTest from './components/ApiTest';
 import { ThemeProvider } from './context/ThemeContext';
 import { BookmarkProvider } from './context/BookmarkContext';
+import { ModalProvider } from './context/ModalContext';
 import {
   BrowserRouter as Router,
   Switch,
@@ -17,37 +18,51 @@ import {
 export default class App extends Component {
   pageSize = 12;
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedCountry: 'in'
+    };
+  }
+
+  handleCountryChange = (countryCode) => {
+    this.setState({ selectedCountry: countryCode });
+  }
+
   render() {
+    const { selectedCountry } = this.state;
+
     return (
       <ThemeProvider>
+        <ModalProvider>
         <BookmarkProvider>
         <Router>
             <div className="App">
-          <Navbar />
+          <Navbar selectedCountry={selectedCountry} onCountryChange={this.handleCountryChange} />
           <Switch>
                 <Route exact path="/">
-                  <News key="general" pageSize={this.pageSize} country="in" category="general" />
+                  <News key="home-all" pageSize={this.pageSize} country={selectedCountry} category="general" aggregateAllCategories={true} />
                 </Route>
                 <Route exact path="/business">
-                  <News key="business" pageSize={this.pageSize} country="in" category="business" />
+                  <News key="business" pageSize={this.pageSize} country={selectedCountry} category="business" />
                 </Route>
                 <Route exact path="/entertainment">
-                  <News key="entertainment" pageSize={this.pageSize} country="in" category="entertainment" />
+                  <News key="entertainment" pageSize={this.pageSize} country={selectedCountry} category="entertainment" />
                 </Route>
                 <Route exact path="/general">
-                  <News key="general" pageSize={this.pageSize} country="in" category="general" />
+                  <News key="general" pageSize={this.pageSize} country={selectedCountry} category="general" />
                 </Route>
                 <Route exact path="/health">
-                  <News key="health" pageSize={this.pageSize} country="in" category="health" />
+                  <News key="health" pageSize={this.pageSize} country={selectedCountry} category="health" />
                 </Route>
                 <Route exact path="/science">
-                  <News key="science" pageSize={this.pageSize} country="in" category="science" />
+                  <News key="science" pageSize={this.pageSize} country={selectedCountry} category="science" />
                 </Route>
                 <Route exact path="/sports">
-                  <News key="sports" pageSize={this.pageSize} country="in" category="sports" />
+                  <News key="sports" pageSize={this.pageSize} country={selectedCountry} category="sports" />
                 </Route>
                 <Route exact path="/technology">
-                  <News key="technology" pageSize={this.pageSize} country="in" category="technology" />
+                  <News key="technology" pageSize={this.pageSize} country={selectedCountry} category="technology" />
                 </Route>
                 <Route exact path="/search">
                   <SearchResults />
@@ -62,6 +77,7 @@ export default class App extends Component {
             </div>
         </Router>
         </BookmarkProvider>
+        </ModalProvider>
       </ThemeProvider>
     )
   }

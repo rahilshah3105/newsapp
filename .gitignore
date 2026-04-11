@@ -11,6 +11,8 @@
 # production
 /build
 
+gpg-gen.txt
+
 # misc
 .DS_Store
 .env.local
