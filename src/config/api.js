@@ -138,11 +138,27 @@ const COUNTRY_REGIONAL_FEEDS = {
 
 // RSS to JSON converter (free service - no API key needed)
 const RSS_TO_JSON_BASE = 'https://api.rss2json.com/v1/api.json';
+const APP_RSS_PROXY_PATH = '/api/rss';
 const FEED_CACHE_TTL_MS = 10 * 60 * 1000;
-const FEED_FAILURE_COOLDOWN_MS = 2 * 60 * 1000;
+const FEED_FAILURE_COOLDOWN_MS = 15 * 60 * 1000;
 const AGGREGATE_CACHE_TTL_MS = 5 * 60 * 1000;
+const REQUEST_TIMEOUT_MS = 12000;
 const feedCache = new Map();
 const aggregateCache = new Map();
+
+const fetchWithTimeout = async (url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+};
 
 export const buildRssUrl = (rssUrl, params = {}) => {
     const url = new URL(RSS_TO_JSON_BASE);
@@ -240,27 +256,13 @@ const fetchSingleFeed = async (rssUrl) => {
 
     const pendingPromise = (async () => {
         try {
-            const url = buildRssUrl(rssUrl);
-            const data = await fetch(url);
-            const parsedData = await data.json();
-
-            if (parsedData.status === 'error') {
-                throw new Error(parsedData.message || 'RSS2JSON failed');
-            }
-
+            const parsedData = await fetchRssDirectly(rssUrl, fallbackSource);
             const items = (parsedData.items || []).map((item) => normalizeRssItem(item, fallbackSource));
             feedCache.set(rssUrl, { data: items, timestamp: Date.now() });
             return items;
-        } catch (rss2jsonError) {
-            try {
-                const parsedData = await fetchRssDirectly(rssUrl, fallbackSource);
-                const items = (parsedData.items || []).map((item) => normalizeRssItem(item, fallbackSource));
-                feedCache.set(rssUrl, { data: items, timestamp: Date.now() });
-                return items;
-            } catch (fallbackError) {
-                feedCache.set(rssUrl, { data: [], timestamp: Date.now(), error: true, failedAt: Date.now() });
-                return [];
-            }
+        } catch (error) {
+            feedCache.set(rssUrl, { data: [], timestamp: Date.now(), error: true, failedAt: Date.now() });
+            return [];
         }
     })();
 
@@ -309,94 +311,75 @@ export const fetchMultiSourceNews = async ({ feeds, page = 1, pageSize = 12, que
 // Fallback method: Direct RSS parsing (no API key needed)
 export const fetchRssDirectly = async (rssUrl, sourceName = 'News Source') => {
     try {
-        // Try multiple CORS proxies to reduce downtime/rate-limit impact.
-        const proxyCandidates = [
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
-            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`,
-            `https://cors.isomorphic-git.org/${rssUrl}`
-        ];
+        const localProxyResponse = await fetchWithTimeout(`${APP_RSS_PROXY_PATH}?url=${encodeURIComponent(rssUrl)}`);
 
-        let xmlText = '';
-        let lastError = null;
+        if (localProxyResponse.ok) {
+            const xmlText = await localProxyResponse.text();
+            if (xmlText && (xmlText.includes('<rss') || xmlText.includes('<feed'))) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                const items = xmlDoc.querySelectorAll('item');
 
-        for (const proxyUrl of proxyCandidates) {
-            try {
-                const response = await fetch(proxyUrl);
-                if (!response.ok) {
-                    throw new Error(`Proxy request failed with status ${response.status}`);
-                }
+                const articles = Array.from(items).map(item => {
+                    let imageUrl = '';
 
-                const text = await response.text();
-                if (!text || (!text.includes('<rss') && !text.includes('<feed'))) {
-                    throw new Error('Response is not valid RSS/Atom XML');
-                }
+                    const mediaContent = item.querySelector('media\\:content, content');
+                    if (mediaContent) {
+                        imageUrl = mediaContent.getAttribute('url') || '';
+                    }
 
-                xmlText = text;
-                break;
-            } catch (proxyError) {
-                lastError = proxyError;
+                    if (!imageUrl) {
+                        const enclosure = item.querySelector('enclosure');
+                        if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
+                            imageUrl = enclosure.getAttribute('url') || '';
+                        }
+                    }
+
+                    if (!imageUrl) {
+                        const mediaThumbnail = item.querySelector('media\\:thumbnail, thumbnail');
+                        if (mediaThumbnail) {
+                            imageUrl = mediaThumbnail.getAttribute('url') || '';
+                        }
+                    }
+
+                    if (!imageUrl) {
+                        const description = item.querySelector('description')?.textContent || '';
+                        const imgMatch = description.match(/<img[^>]+src="([^"]+)"/);
+                        if (imgMatch) {
+                            imageUrl = imgMatch[1];
+                        }
+                    }
+
+                    return {
+                        title: item.querySelector('title')?.textContent || '',
+                        description: item.querySelector('description')?.textContent?.replace(/<[^>]*>/g, '') || '',
+                        url: item.querySelector('link')?.textContent || '',
+                        image: imageUrl,
+                        publishedAt: item.querySelector('pubDate')?.textContent || '',
+                        source: { name: sourceName },
+                        author: sourceName
+                    };
+                });
+
+                return { status: 'ok', items: articles };
             }
         }
 
-        if (!xmlText) {
-            throw lastError || new Error('All RSS proxy attempts failed');
+        const rss2jsonUrl = buildRssUrl(rssUrl);
+        const response = await fetchWithTimeout(rss2jsonUrl);
+        const data = await response.json();
+
+        if (data.status === 'error') {
+            throw new Error(data.message || 'RSS2JSON failed');
         }
 
-        // Simple XML parsing to extract articles
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        const items = xmlDoc.querySelectorAll('item');
-
-        const articles = Array.from(items).map(item => {
-            // Try to extract image from various sources
-            let imageUrl = '';
-
-            // Check for media:content (BBC often uses this)
-            const mediaContent = item.querySelector('media\\:content, content');
-            if (mediaContent) {
-                imageUrl = mediaContent.getAttribute('url') || '';
-            }
-
-            // Check for enclosure (standard RSS image)
-            if (!imageUrl) {
-                const enclosure = item.querySelector('enclosure');
-                if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
-                    imageUrl = enclosure.getAttribute('url') || '';
-                }
-            }
-
-            // Check for media:thumbnail
-            if (!imageUrl) {
-                const mediaThumbnail = item.querySelector('media\\:thumbnail, thumbnail');
-                if (mediaThumbnail) {
-                    imageUrl = mediaThumbnail.getAttribute('url') || '';
-                }
-            }
-
-            // Try to extract from description if it contains an image
-            if (!imageUrl) {
-                const description = item.querySelector('description')?.textContent || '';
-                const imgMatch = description.match(/<img[^>]+src="([^"]+)"/);
-                if (imgMatch) {
-                    imageUrl = imgMatch[1];
-                }
-            }
-
-            return {
-                title: item.querySelector('title')?.textContent || '',
-                description: item.querySelector('description')?.textContent?.replace(/<[^>]*>/g, '') || '',
-                url: item.querySelector('link')?.textContent || '',
-                image: imageUrl,
-                publishedAt: item.querySelector('pubDate')?.textContent || '',
-                source: { name: sourceName },
-                author: sourceName
-            };
-        });
-
-        return { status: 'ok', items: articles };
+        return {
+            status: 'ok',
+            items: (data.items || []).map((item) => normalizeRssItem(item, sourceName))
+        };
     } catch (error) {
-        console.error('Direct RSS fetch error:', error);
-        throw new Error('Failed to fetch RSS feed directly');
+        console.warn(`RSS fetch failed for ${sourceName}:`, error);
+        throw new Error(`Failed to load ${sourceName} feed right now`);
     }
 };
 
