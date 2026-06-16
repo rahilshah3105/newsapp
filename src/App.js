@@ -7,6 +7,7 @@ import SearchResults from './components/SearchResults';
 import Bookmarks from './components/Bookmarks';
 import ApiTest from './components/ApiTest';
 import AdBanner from './components/AdBanner';
+import DeveloperApps from './components/DeveloperApps';
 import { ThemeProvider } from './context/ThemeContext';
 import { BookmarkProvider } from './context/BookmarkContext';
 import { ModalProvider } from './context/ModalContext';
@@ -73,6 +74,9 @@ export default class App extends Component {
                 </Route>
                 <Route exact path="/bookmarks">
                   <Bookmarks />
+                </Route>
+                <Route exact path="/apps">
+                  <DeveloperApps />
                 </Route>
                 <Route exact path="/api-test">
                   <ApiTest />

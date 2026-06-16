@@ -341,6 +341,10 @@ const Navbar = ({ selectedCountry = 'in', onCountryChange = () => { } }) => {
                         </form>
 
                         <div className="navbar-actions">
+                            <Link className="bookmark-badge" to="/apps" style={{ marginRight: '16px' }} title="Developer Apps">
+                                <i className="fas fa-cubes"></i>
+                            </Link>
+
                             <Link className="bookmark-badge" to="/bookmarks">
                                 <i className="fas fa-bookmark"></i>
                                 {bookmarks.length > 0 && (
