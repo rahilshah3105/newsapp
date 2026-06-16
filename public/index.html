@@ -2,6 +2,24 @@
 <html lang="en">
 
 <head>
+  <script type="text/javascript">
+    // Prevent third-party scripts from blocking trackpad/mousewheel scrolling
+    (function() {
+      const originalAddEventListener = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function(type, listener, options) {
+        if (['wheel', 'mousewheel', 'DOMMouseScroll', 'touchmove'].includes(type)) {
+          if (options === undefined) {
+            options = { passive: true };
+          } else if (typeof options === 'boolean') {
+            options = { capture: options, passive: true };
+          } else if (typeof options === 'object') {
+            options.passive = true;
+          }
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+      };
+    })();
+  </script>
   <meta charset="utf-8" />
       <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
       <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
@@ -34,6 +52,7 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
   <title>NewsPulse - Your Daily News Companion</title>
+  <script src="https://pl29766180.effectivecpmnetwork.com/28/b9/4d/28b94da2875f31ba2f610844650c9f8f.js"></script>
 </head>
 
 <body>
@@ -49,6 +68,12 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+  <script type="text/javascript">
+    var infolinks_pid = 3446076;
+    var infolinks_wsid = 0;
+  </script>
+  <script type="text/javascript" src="http://resources.infolinks.com/js/infolinks_main.js"></script>
+  <script src="https://pl29766182.effectivecpmnetwork.com/d2/66/2c/d2662c6676ed0c5864bec3961ad08398.js"></script>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"

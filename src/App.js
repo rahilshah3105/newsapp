@@ -6,6 +6,7 @@ import News from './components/News';
 import SearchResults from './components/SearchResults';
 import Bookmarks from './components/Bookmarks';
 import ApiTest from './components/ApiTest';
+import AdBanner from './components/AdBanner';
 import { ThemeProvider } from './context/ThemeContext';
 import { BookmarkProvider } from './context/BookmarkContext';
 import { ModalProvider } from './context/ModalContext';
@@ -37,8 +38,11 @@ export default class App extends Component {
         <ModalProvider>
         <BookmarkProvider>
         <Router>
-            <div className="App">
+            <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Navbar selectedCountry={selectedCountry} onCountryChange={this.handleCountryChange} />
+          <div style={{ width: '100%', padding: '16px 0 0 0' }}>
+            <AdBanner position="top" />
+          </div>
           <Switch>
                 <Route exact path="/">
                   <News key="home-all" pageSize={this.pageSize} country={selectedCountry} category="general" aggregateAllCategories={true} />
@@ -74,6 +78,9 @@ export default class App extends Component {
                   <ApiTest />
                 </Route>
           </Switch>
+          <div style={{ width: '100%', padding: '0 0 16px 0', marginTop: 'auto' }}>
+            <AdBanner position="bottom" />
+          </div>
             </div>
         </Router>
         </BookmarkProvider>
