@@ -44,12 +44,12 @@ const APPS = [
     color: '#6366f1'
   },
   {
-    title: 'NewsPulse',
-    description: 'Read latest headlines by category with a responsive news reader featuring bookmarks and dark mode.',
-    url: 'https://getyournewspulse.netlify.app/',
-    tag: 'Information',
-    icon: 'fa-newspaper',
-    color: '#f1c40f'
+    title: 'Chrome Extension',
+    description: 'Access all your favorite developer, social, and security utilities instantly from your browser toolbar.',
+    url: 'https://github.com/rahilshah3105',
+    tag: 'Extension',
+    icon: 'fa-chrome',
+    color: '#e67e22'
   },
 ];
 
@@ -76,7 +76,7 @@ export default function DeveloperApps() {
                 <div className="app-card-modern p-4">
                   <div className="d-flex align-items-center mb-3">
                     <div className="app-card-icon-wrap me-3" style={{ backgroundColor: `${app.color}15`, color: app.color }}>
-                      <i className={`fas ${app.icon} fa-lg`}></i>
+                      <i className={`${app.icon === 'fa-instagram' || app.icon === 'fa-chrome' ? 'fab' : 'fas'} ${app.icon} fa-lg`}></i>
                     </div>
                     <div>
                       <span className="badge-tag mb-1" style={{ color: app.color, border: `1px solid ${app.color}30` }}>{app.tag}</span>
